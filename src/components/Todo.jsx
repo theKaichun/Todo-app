@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import TodoItems from "./TodoItems";
 import { MdDateRange } from "react-icons/md";
 import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const Todo = () => {
   const [todoList, setTodoList] = useState(
@@ -10,15 +11,11 @@ const Todo = () => {
       : []
   );
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [filteredTodoList, setFilteredTodoList] = useState([]);
   const inputRef = useRef();
 
   const add = () => {
     const inputText = inputRef.current.value.trim();
-
-    if (inputText === "") {
-      return null;
-    }
+    if (inputText === "") return;
 
     const newTodo = {
       id: Date.now(),
@@ -36,12 +33,9 @@ const Todo = () => {
 
   const toggle = (id) => {
     setTodoList((prevTodos) =>
-      prevTodos.map((todo) => {
-        if (todo.id === id) {
-          return { ...todo, isComplete: !todo.isComplete };
-        }
-        return todo;
-      })
+      prevTodos.map((todo) =>
+        todo.id === id ? { ...todo, isComplete: !todo.isComplete } : todo
+      )
     );
   };
 
@@ -49,38 +43,27 @@ const Todo = () => {
     localStorage.setItem("todos", JSON.stringify(todoList));
   }, [todoList]);
 
-  useEffect(() => {
-    const todosForSelectedDate = todoList.filter(
-      (todo) => todo.date === currentDate.toLocaleDateString()
+  const calculateProgress = (date) => {
+    const tasksForDate = todoList.filter(
+      (todo) => todo.date === date.toLocaleDateString()
     );
-    setFilteredTodoList(todosForSelectedDate);
-  }, [currentDate, todoList]);
-
-  const calculateProgress = () => {
-    if (filteredTodoList.length === 0) return 0;
-    const completedTasks = filteredTodoList.filter(
+    if (tasksForDate.length === 0) return 0;
+    const completedTasks = tasksForDate.filter(
       (todo) => todo.isComplete
     ).length;
-    return Math.round((completedTasks / filteredTodoList.length) * 100);
+    return Math.round((completedTasks / tasksForDate.length) * 100);
   };
 
-  const getProgressColor = () => {
-    const progress = calculateProgress();
-    if (progress <= 33) return "bg-red-500";
-    if (progress <= 66) return "bg-yellow-500";
-    return "bg-green-500";
-  };
-
-  const dayClassName = (date) => {
-    const dateString = date.toLocaleDateString();
-    return todoList.some((todo) => todo.date === dateString)
-      ? "has-todo"
-      : undefined;
+  const getDayClassName = (date) => {
+    const progress = calculateProgress(date);
+    if (progress === 100) return "bg-green-500 text-white";
+    if (progress >= 50) return "bg-yellow-500 text-white";
+    if (progress > 0) return "bg-red-500 text-white";
+    return "";
   };
 
   return (
     <div className="bg-white place-self-center w-11/12 max-w-md flex flex-col p-7 min-h-[550px] rounded-xl">
-      {/* title */}
       <div className="flex items-center mt-7 gap-2">
         <MdDateRange className="w-8 h-14" />
         <h1 className="text-3xl font-semibold">To-Do List</h1>
@@ -89,31 +72,16 @@ const Todo = () => {
         </span>
       </div>
 
-      {/* Date picker with highlighted dates */}
       <div className="flex items-center my-4">
         <DatePicker
           selected={currentDate}
           onChange={(date) => setCurrentDate(date)}
+          dayClassName={(date) => getDayClassName(date)}
           className="p-2 border border-gray-300 rounded"
-          dayClassName={dayClassName}
         />
       </div>
 
-      {/* Progress bar with dynamic color */}
-      <div className="mt-4">
-        <div className="flex justify-between mb-2">
-          <span className="text-sm text-gray-600">完成度</span>
-          <span className="text-sm text-gray-600">{calculateProgress()}%</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2.5">
-          <div
-            className={`h-2.5 rounded-full transition-all duration-300 ${getProgressColor()}`}
-            style={{ width: `${calculateProgress()}%` }}
-          ></div>
-        </div>
-      </div>
-
-      {/* Input box */}
+      {/* input box */}
       <div className="flex items-center my-7 h-9 bg-gray-200 rounded-full">
         <input
           ref={inputRef}
@@ -129,18 +97,20 @@ const Todo = () => {
         </button>
       </div>
 
-      {/* Todo list */}
+      {/* todo list */}
       <div>
-        {filteredTodoList.map((item, index) => (
-          <TodoItems
-            key={index}
-            text={item.text}
-            id={item.id}
-            isComplete={item.isComplete}
-            deleteTodo={deleteTodo}
-            toggle={toggle}
-          />
-        ))}
+        {todoList
+          .filter((item) => item.date === currentDate.toLocaleDateString())
+          .map((item) => (
+            <TodoItems
+              key={item.id}
+              text={item.text}
+              id={item.id}
+              isComplete={item.isComplete}
+              deleteTodo={deleteTodo}
+              toggle={toggle}
+            />
+          ))}
       </div>
     </div>
   );
