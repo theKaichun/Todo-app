@@ -81,6 +81,28 @@ const Todo = () => {
         />
       </div>
 
+      {/* Progress Bar */}
+      <div className="mt-4">
+        <div className="flex justify-between mb-2">
+          <span className="text-sm text-gray-600">完成度</span>
+          <span className="text-sm text-gray-600">
+            {calculateProgress(currentDate)}%
+          </span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2.5">
+          <div
+            className={`h-2.5 rounded-full transition-all duration-300 ${
+              calculateProgress(currentDate) === 100
+                ? "bg-green-500"
+                : calculateProgress(currentDate) >= 50
+                ? "bg-yellow-500"
+                : "bg-red-500"
+            }`}
+            style={{ width: `${calculateProgress(currentDate)}%` }}
+          ></div>
+        </div>
+      </div>
+
       {/* input box */}
       <div className="flex items-center my-7 h-9 bg-gray-200 rounded-full">
         <input
