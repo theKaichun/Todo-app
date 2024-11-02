@@ -46,15 +46,33 @@ const Todo = () => {
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todoList));
   }, [todoList]);
+
+  const calculateProgress = () => {
+    if (todoList.length === 0) return 0;
+    const completedTasks = todoList.filter((todo) => todo.isComplete).length;
+    return Math.round((completedTasks / todoList.length) * 100);
+  };
+
   return (
     <div className="bg-white place-self-center w-11/12 max-w-md flex flex-col p-7 min-h-[550px] rounded-xl">
-      {/*title */}
+      {/* title */}
       <div className="flex items-center mt-7 gap-2">
         <MdDateRange className="w-8 h-14" />
-
         <h1 className="text-3xl font-semibold">To-Do List</h1>
       </div>
 
+      <div className="mt-4">
+        <div className="flex justify-between mb-2">
+          <span className="text-sm text-gray-600">完成度</span>
+          <span className="text-sm text-gray-600">{calculateProgress()}%</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2.5">
+          <div
+            className="bg-orange-600 h-2.5 rounded-full transition-all duration-300"
+            style={{ width: `${calculateProgress()}%` }}
+          ></div>
+        </div>
+      </div>
       {/* input box */}
 
       <div className=" flex items-center my-7 bg-gray-200 rounded-full">
