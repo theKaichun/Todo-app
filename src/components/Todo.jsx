@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-
 import TodoItems from "./TodoItems";
 import { MdDateRange } from "react-icons/md";
+import DatePicker from "react-datepicker";
 
 const Todo = () => {
   const [todoList, setTodoList] = useState(
@@ -9,7 +9,10 @@ const Todo = () => {
       ? JSON.parse(localStorage.getItem("todos"))
       : []
   );
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [filteredTodoList, setFilteredTodoList] = useState([]);
   const inputRef = useRef();
+
   const add = () => {
     const inputText = inputRef.current.value.trim();
 
@@ -21,36 +24,44 @@ const Todo = () => {
       id: Date.now(),
       text: inputText,
       isComplete: false,
+      date: currentDate.toLocaleDateString(),
     };
     setTodoList((prev) => [...prev, newTodo]);
     inputRef.current.value = "";
   };
 
   const deleteTodo = (id) => {
-    setTodoList((prvTodos) => {
-      return prvTodos.filter((todo) => todo.id !== id);
-    });
+    setTodoList((prevTodos) => prevTodos.filter((todo) => todo.id !== id));
   };
 
   const toggle = (id) => {
-    setTodoList((prevTodos) => {
-      return prevTodos.map((todo) => {
+    setTodoList((prevTodos) =>
+      prevTodos.map((todo) => {
         if (todo.id === id) {
           return { ...todo, isComplete: !todo.isComplete };
         }
         return todo;
-      });
-    });
+      })
+    );
   };
 
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todoList));
   }, [todoList]);
 
+  useEffect(() => {
+    const todosForSelectedDate = todoList.filter(
+      (todo) => todo.date === currentDate.toLocaleDateString()
+    );
+    setFilteredTodoList(todosForSelectedDate);
+  }, [currentDate, todoList]);
+
   const calculateProgress = () => {
-    if (todoList.length === 0) return 0;
-    const completedTasks = todoList.filter((todo) => todo.isComplete).length;
-    return Math.round((completedTasks / todoList.length) * 100);
+    if (filteredTodoList.length === 0) return 0;
+    const completedTasks = filteredTodoList.filter(
+      (todo) => todo.isComplete
+    ).length;
+    return Math.round((completedTasks / filteredTodoList.length) * 100);
   };
 
   return (
@@ -59,8 +70,21 @@ const Todo = () => {
       <div className="flex items-center mt-7 gap-2">
         <MdDateRange className="w-8 h-14" />
         <h1 className="text-3xl font-semibold">To-Do List</h1>
+        <span className="ml-2 text-gray-500 text-xl">
+          {currentDate.toLocaleDateString()}
+        </span>
       </div>
 
+      {/* Date picker */}
+      <div className="flex items-center my-4">
+        <DatePicker
+          selected={currentDate}
+          onChange={(date) => setCurrentDate(date)}
+          className="p-2 border border-gray-300 rounded"
+        />
+      </div>
+
+      {/* Progress bar */}
       <div className="mt-4">
         <div className="flex justify-between mb-2">
           <span className="text-sm text-gray-600">完成度</span>
@@ -73,38 +97,35 @@ const Todo = () => {
           ></div>
         </div>
       </div>
-      {/* input box */}
 
-      <div className=" flex items-center my-7 bg-gray-200 rounded-full">
+      {/* Input box */}
+      <div className="flex items-center my-7 h-9 bg-gray-200 rounded-full">
         <input
           ref={inputRef}
-          className="bg-transparent border-0 outline-none
-           flex-1 h-14 pl-6 pr-2 placeholder:text-slate-600"
+          className="bg-transparent border-0 outline-none flex-1 h-12 pl-6 pr-2 placeholder:text-slate-600"
           type="text"
           placeholder="Add your task"
         />
         <button
           onClick={add}
-          className=" border-none rounded-full bg-orange-600 w-32 h-14 text-white text-lg font-medium cursor-pointer"
+          className="border-none rounded-full bg-orange-600 w-32 h-9 text-white text-lg font-medium cursor-pointer"
         >
           ADD +
         </button>
       </div>
-      {/* todo list */}
 
+      {/* Todo list */}
       <div>
-        {todoList.map((item, index) => {
-          return (
-            <TodoItems
-              key={index}
-              text={item.text}
-              id={item.id}
-              isComplete={item.isComplete}
-              deleteTodo={deleteTodo}
-              toggle={toggle}
-            />
-          );
-        })}
+        {filteredTodoList.map((item, index) => (
+          <TodoItems
+            key={index}
+            text={item.text}
+            id={item.id}
+            isComplete={item.isComplete}
+            deleteTodo={deleteTodo}
+            toggle={toggle}
+          />
+        ))}
       </div>
     </div>
   );

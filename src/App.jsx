@@ -1,5 +1,6 @@
 import React from "react";
 import Todo from "./components/Todo";
+import "react-datepicker/dist/react-datepicker.css";
 
 const App = () => {
   return (
