@@ -64,6 +64,20 @@ const Todo = () => {
     return Math.round((completedTasks / filteredTodoList.length) * 100);
   };
 
+  const getProgressColor = () => {
+    const progress = calculateProgress();
+    if (progress <= 33) return "bg-red-500";
+    if (progress <= 66) return "bg-yellow-500";
+    return "bg-green-500";
+  };
+
+  const dayClassName = (date) => {
+    const dateString = date.toLocaleDateString();
+    return todoList.some((todo) => todo.date === dateString)
+      ? "has-todo"
+      : undefined;
+  };
+
   return (
     <div className="bg-white place-self-center w-11/12 max-w-md flex flex-col p-7 min-h-[550px] rounded-xl">
       {/* title */}
@@ -75,16 +89,17 @@ const Todo = () => {
         </span>
       </div>
 
-      {/* Date picker */}
+      {/* Date picker with highlighted dates */}
       <div className="flex items-center my-4">
         <DatePicker
           selected={currentDate}
           onChange={(date) => setCurrentDate(date)}
           className="p-2 border border-gray-300 rounded"
+          dayClassName={dayClassName}
         />
       </div>
 
-      {/* Progress bar */}
+      {/* Progress bar with dynamic color */}
       <div className="mt-4">
         <div className="flex justify-between mb-2">
           <span className="text-sm text-gray-600">完成度</span>
@@ -92,7 +107,7 @@ const Todo = () => {
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2.5">
           <div
-            className="bg-orange-600 h-2.5 rounded-full transition-all duration-300"
+            className={`h-2.5 rounded-full transition-all duration-300 ${getProgressColor()}`}
             style={{ width: `${calculateProgress()}%` }}
           ></div>
         </div>
