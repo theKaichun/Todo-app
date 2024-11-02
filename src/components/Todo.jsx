@@ -55,11 +55,16 @@ const Todo = () => {
   };
 
   const getDayClassName = (date) => {
+    const tasksForDate = todoList.filter(
+      (todo) => todo.date === date.toLocaleDateString()
+    );
+    if (tasksForDate.length === 0) return "";
+
     const progress = calculateProgress(date);
     if (progress === 100) return "bg-green-500 text-white";
     if (progress >= 50) return "bg-yellow-500 text-white";
-    if (progress > 0) return "bg-red-500 text-white";
-    return "";
+
+    return "bg-red-500 text-white";
   };
 
   return (
